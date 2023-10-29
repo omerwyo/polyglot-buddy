@@ -81,7 +81,7 @@ def handle_question_response(update: Update, context: CallbackContext) -> None:
     question_followup = "Would you like to ask another question?"
 
     keyboard = [
-        [InlineKeyboardButton("Yes, same language", callback_data=f'repeat_{language}')],
+        [InlineKeyboardButton("Yes, same language", callback_data=language)],
         [InlineKeyboardButton("Yes, different language", callback_data='real_time')],
         [InlineKeyboardButton("Done", callback_data='done')],
     ]
@@ -114,11 +114,9 @@ def handle_second_chance_question(update: Update, context: CallbackContext) -> i
     query = update.callback_query
     query.answer()
 
-    # Check if the callback data starts with 'repeat_'
-    if query.data.startswith('repeat_'):
-        # Extract the language from the callback data and strip the 'repeat_' part
-        language = query.data.replace('repeat_', '')
-        context.user_data['language'] = language
+    # Directly use the callback data as the language
+    if query.data in ['Spanish', 'French', 'Mandarin', 'German', 'Italian']:
+        context.user_data['language'] = query.data
         ask_question(update, context)
         return AWAITING_QUESTION
 
@@ -216,7 +214,7 @@ conv_handler = ConversationHandler(
             MessageHandler(Filters.text & ~Filters.command, handle_comprehension_response)
         ],
         ASKING_QUESTION_AGAIN: [
-            CallbackQueryHandler(handle_second_chance_question, pattern='^(repeat_Spanish|repeat_French|repeat_Mandarin|repeat_German|repeat_Italian|real_time|done)$')
+            CallbackQueryHandler(handle_second_chance_question, pattern='^(Spanish|French|Mandarin|German|Italian|real_time|done)$')
         ],
         # Add other states and handlers as needed
     },
@@ -236,21 +234,6 @@ def main() -> None:
     dispatcher = updater.dispatcher
 
     dispatcher.add_handler(conv_handler)
-
-    # Handlers for commands and messages
-    # dispatcher.add_handler(CommandHandler("start", start))
-    # dispatcher.add_handler(CallbackQueryHandler(real_time_language_assistance, pattern='^real_time$'))
-    # dispatcher.add_handler(CallbackQueryHandler(ask_question, pattern='^(spanish|french|mandarin|german|italian)$'))
-    # # dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command & filter_real_time_assistance, handle_question_response))
-    # dispatcher.add_handler(CallbackQueryHandler(repeat_question, pattern='^repeat_(spanish|french|mandarin|german|italian)$'))
-    # # dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command & (lambda update, context: context.user_data.get('state') == REAL_TIME_ASSISTANCE), handle_question_response))
-    
-    # dispatcher.add_handler(CallbackQueryHandler(done, pattern='^done$'))
-    # dispatcher.add_handler(CallbackQueryHandler(interactive_language_learning, pattern='^language_learning$'))
-    # dispatcher.add_handler(CallbackQueryHandler(display_comprehension_question, pattern='^learn_(spanish|french|mandarin|german|italian)$'))
-    # # dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command & filter_language_learning, handle_comprehension_response))
-    # # dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command & (lambda update, context: context.user_data.get('state') == LANGUAGE_LEARNING), handle_comprehension_response))
-    # dispatcher.add_handler(CallbackQueryHandler(display_comprehension_question, pattern='^repeat_learn_(spanish|french|mandarin|german|italian)$'))
 
     # Start the bot
     updater.start_polling()
