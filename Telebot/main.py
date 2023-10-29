@@ -139,11 +139,11 @@ def interactive_language_learning(update: Update, context: CallbackContext) -> N
     query.answer()
 
     keyboard = [
-        [InlineKeyboardButton("Spanish", callback_data='learn_Spanish')],
-        [InlineKeyboardButton("French", callback_data='learn_French')],
-        [InlineKeyboardButton("Mandarin", callback_data='learn_Mandarin')],
-        [InlineKeyboardButton("German", callback_data='learn_German')],
-        [InlineKeyboardButton("Italian", callback_data='learn_Italian')],
+        [InlineKeyboardButton("Spanish", callback_data='Spanish')],
+        [InlineKeyboardButton("French", callback_data='French')],
+        [InlineKeyboardButton("Mandarin", callback_data='Mandarin')],
+        [InlineKeyboardButton("German", callback_data='German')],
+        [InlineKeyboardButton("Italian", callback_data='Italian')],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     context.bot.send_message(chat_id=update.effective_chat.id, text="Great! First, please choose a language", reply_markup=reply_markup)
@@ -154,7 +154,7 @@ def interactive_language_learning(update: Update, context: CallbackContext) -> N
 def display_comprehension_question(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     query.answer()
-    language = query.data.split('_')[1]  # Extract the language from the callback data
+    language = query.data
     context.user_data['language_learning'] = language  # Store the language for future reference
 
     # Dummy data for comprehension question
@@ -166,7 +166,7 @@ def display_comprehension_question(update: Update, context: CallbackContext) -> 
         "Italian": "Come stai?",
     }
 
-    question_text = f"Here is a comprehension question for {language}:\n{comprehension_questions[language]}"
+    question_text = f"Here is a comprehension question for {language}. Please type in your response to this comprehension question:\n{comprehension_questions[language]}"
     context.bot.send_message(chat_id=update.effective_chat.id, text=question_text)
 
     return AWAITING_COMPREHENSION_RESPONSE
@@ -183,7 +183,7 @@ def handle_comprehension_response(update: Update, context: CallbackContext) -> N
     question_followup = "Would you like to try another comprehension question?"
 
     keyboard = [
-        [InlineKeyboardButton("Yes, same language", callback_data=f'repeat_learn_{language}')],
+        [InlineKeyboardButton("Yes, same language", callback_data=language)],
         [InlineKeyboardButton("Yes, different language", callback_data='interactive_language_learning')],
         [InlineKeyboardButton("Done", callback_data='done')],
     ]
@@ -191,6 +191,28 @@ def handle_comprehension_response(update: Update, context: CallbackContext) -> N
 
     update.message.reply_text(feedback_text)
     context.bot.send_message(chat_id=update.effective_chat.id, text=question_followup, reply_markup=reply_markup)
+
+    return ASKING_COMPREHENSION_AGAIN
+
+# Callback handler to handle the user's choice to try another comprehension question or not
+def handle_second_chance_comprehension(update: Update, context: CallbackContext) -> int:
+    query = update.callback_query
+    query.answer()
+
+    # Directly use the callback data as the language
+    if query.data in ['Spanish', 'French', 'Mandarin', 'German', 'Italian']:
+        context.user_data['language_learning'] = query.data
+        display_comprehension_question(update, context)
+        return AWAITING_COMPREHENSION_RESPONSE
+
+    elif query.data == 'interactive_language_learning':
+        # The user wants to change the language
+        interactive_language_learning(update, context)
+        return SELECTING_LANGUAGE_COMPREHENSION
+
+    elif query.data == 'done':
+        # The user is done, send the final message
+        done(update, context)
 
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Define your ConversationHandler
@@ -205,7 +227,7 @@ conv_handler = ConversationHandler(
             CallbackQueryHandler(ask_question, pattern='^(Spanish|French|Mandarin|German|Italian)$')
         ],
         SELECTING_LANGUAGE_COMPREHENSION: [
-            CallbackQueryHandler(display_comprehension_question, pattern='^learn_(Spanish|French|Mandarin|German|Italian)$')
+            CallbackQueryHandler(display_comprehension_question, pattern='^(Spanish|French|Mandarin|German|Italian)$')
         ],
         AWAITING_QUESTION: [
             MessageHandler(Filters.text & ~Filters.command, handle_question_response)
@@ -216,6 +238,9 @@ conv_handler = ConversationHandler(
         ASKING_QUESTION_AGAIN: [
             CallbackQueryHandler(handle_second_chance_question, pattern='^(Spanish|French|Mandarin|German|Italian|real_time|done)$')
         ],
+        ASKING_COMPREHENSION_AGAIN: [
+            CallbackQueryHandler(handle_second_chance_comprehension, pattern='^(Spanish|French|Mandarin|German|Italian|interactive_language_learning|done)$')
+        ]
         # Add other states and handlers as needed
     },
     fallbacks=[
