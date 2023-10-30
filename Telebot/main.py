@@ -2,7 +2,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, MessageHandler, CallbackContext, Filters, MessageFilter, ConversationHandler
 
 # Define states
-SELECTING_LANGUAGE_QUESTION, SELECTING_LANGUAGE_COMPREHENSION, AWAITING_QUESTION, AWAITING_COMPREHENSION_RESPONSE, ASKING_QUESTION_AGAIN, ASKING_COMPREHENSION_AGAIN = range(6)
+SELECTING_ACTION, SELECTING_LANGUAGE_QUESTION, SELECTING_LANGUAGE_COMPREHENSION, AWAITING_QUESTION, AWAITING_COMPREHENSION_RESPONSE, ASKING_QUESTION_AGAIN, ASKING_COMPREHENSION_AGAIN = range(7)
 
 # Define the callback function for the '/start' command
 def start(update: Update, context: CallbackContext) -> None:
@@ -37,8 +37,7 @@ def real_time_language_assistance(update: Update, context: CallbackContext) -> N
         [InlineKeyboardButton("Italian", callback_data='Italian')],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    # query.edit_message_text(text="Great! First, please choose a language", reply_markup=reply_markup)
-    # Send a new message instead of editing the old one
+
     context.bot.send_message(chat_id=update.effective_chat.id, text="Great! First, please choose a language", reply_markup=reply_markup)
 
     return SELECTING_LANGUAGE_QUESTION
@@ -48,9 +47,6 @@ def ask_question(update: Update, context: CallbackContext) -> None:
     query.answer()
     context.user_data['language'] = query.data  # Store chosen language for future reference
 
-    # query.edit_message_text(text="What question would you like me to help you with?")
-
-    # Send a new message instead of editing the old one
     context.bot.send_message(chat_id=update.effective_chat.id, text="What question would you like me to help you with?")
 
     return AWAITING_QUESTION
@@ -87,27 +83,9 @@ def handle_question_response(update: Update, context: CallbackContext) -> None:
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    # update.message.reply_text(follow_up, reply_markup=reply_markup)
-    # Send the question with buttons as a new message
     context.bot.send_message(chat_id=update.effective_chat.id, text=question_followup, reply_markup=reply_markup)
 
     return ASKING_QUESTION_AGAIN
-
-def done(update: Update, context: CallbackContext) -> None:
-    query = update.callback_query
-    query.answer()
-
-    message = "Great! Let me know if you need anything else."
-
-    keyboard = [
-        [InlineKeyboardButton("Real-time language assistance", callback_data='real_time')],
-        [InlineKeyboardButton("Interactive Language Learning", callback_data='language_learning')],
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-
-    # query.edit_message_text(text=message, reply_markup=reply_markup)
-    # Send a new message instead of editing the old one
-    context.bot.send_message(chat_id=update.effective_chat.id, text=message, reply_markup=reply_markup)
 
 # Callback handler to handle the user's choice to ask another question or not
 def handle_second_chance_question(update: Update, context: CallbackContext) -> int:
@@ -128,6 +106,7 @@ def handle_second_chance_question(update: Update, context: CallbackContext) -> i
     elif query.data == 'done':
         # The user is done, send the final message
         done(update, context)
+        return SELECTING_ACTION
 
 
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -213,8 +192,43 @@ def handle_second_chance_comprehension(update: Update, context: CallbackContext)
     elif query.data == 'done':
         # The user is done, send the final message
         done(update, context)
+        return SELECTING_ACTION
 
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Changes to be made: write a conditional to return either SELECTING_LANGUAGE_QUESTION or SELECTING_LANGUAGE_COMPREHENSION
+def done(update: Update, context: CallbackContext) -> int:
+    query = update.callback_query
+    query.answer()
+
+    message = "Great! Let me know if you need anything else."
+
+    keyboard = [
+        [InlineKeyboardButton("Real-time language assistance", callback_data='real_time')],
+        [InlineKeyboardButton("Interactive Language Learning", callback_data='language_learning')],
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    context.bot.send_message(chat_id=update.effective_chat.id, text=message, reply_markup=reply_markup)
+
+    return SELECTING_ACTION
+
+def after_done(update: Update, context: CallbackContext) -> int:
+    query = update.callback_query
+    query.answer()
+
+    # Directly use the callback data as the language
+    if query.data == 'real_time':
+        real_time_language_assistance(update, context)
+        return SELECTING_LANGUAGE_QUESTION
+
+    elif query.data == 'language_learning':
+        # The user wants to change the language
+        interactive_language_learning(update, context)
+        return SELECTING_LANGUAGE_COMPREHENSION
+
+# ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ 
+
 # Define your ConversationHandler
 conv_handler = ConversationHandler(
     entry_points=[
@@ -223,11 +237,18 @@ conv_handler = ConversationHandler(
         CallbackQueryHandler(interactive_language_learning, pattern='^language_learning$')
     ],
     states={
+        SELECTING_ACTION: [
+            # CallbackQueryHandler(real_time_language_assistance, pattern='^real_time$'),
+            # CallbackQueryHandler(interactive_language_learning, pattern='^language_learning$'),
+            CallbackQueryHandler(after_done, pattern='^(real_time|language_learning)$')
+        ],
         SELECTING_LANGUAGE_QUESTION: [
-            CallbackQueryHandler(ask_question, pattern='^(Spanish|French|Mandarin|German|Italian)$')
+            CallbackQueryHandler(ask_question, pattern='^(Spanish|French|Mandarin|German|Italian)$'),
+            CallbackQueryHandler(done, pattern='^done$'),  # Allow "done" to be called here
         ],
         SELECTING_LANGUAGE_COMPREHENSION: [
-            CallbackQueryHandler(display_comprehension_question, pattern='^(Spanish|French|Mandarin|German|Italian)$')
+            CallbackQueryHandler(display_comprehension_question, pattern='^(Spanish|French|Mandarin|German|Italian)$'),
+            CallbackQueryHandler(done, pattern='^done$'),  # Allow "done" to be called here
         ],
         AWAITING_QUESTION: [
             MessageHandler(Filters.text & ~Filters.command, handle_question_response)
@@ -244,7 +265,6 @@ conv_handler = ConversationHandler(
         # Add other states and handlers as needed
     },
     fallbacks=[
-        CallbackQueryHandler(done, pattern='^done$'),
         CommandHandler('start', start)
     ],
 )
