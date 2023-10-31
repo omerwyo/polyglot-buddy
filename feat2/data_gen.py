@@ -1,6 +1,37 @@
 import json
 import os
 import requests
+from langchain.prompts import PromptTemplate
+
+template = """Create an short-answer question in {target_language} and the corresponding answer in {target_language} based on the following context
+1) A reading comprehension passage, 
+2) A sample multiple choice question (MCQ)
+3) Options for the MCQ 
+4) Answer to the MCQ
+
+The short-answer question has to be abled to be answered using just the passage provided.
+
+Reading Comprehension Passage: {passage}
+
+Sample Multiple Choice Question: {question}
+
+Options for the MCQ:
+1: {option_1}
+2: {option_2}
+3: {option_3}
+4: {option_4}
+
+Answer to the MCQ: {correct_option}
+
+The format of your response should be exactly as follows:
+Question: <Generated Short-answer Question in target language>
+Answer: <Corresponding Answer to generated Short-answer Question>
+"""
+
+prompt_template = PromptTemplate(
+    input_variables=["target_language", "passage", "question", "option_1", "option_2", "option_3", "option_4", "correct_option"],
+    template=template
+)
 
 class DataLoader:
     def __init__(self, languages_map, directory, limit=None):
@@ -26,7 +57,7 @@ class DataLoader:
         return self.data.get(lang, [])
 
 class OpenEndedQuestionGenerator:
-    def __init__(self, data_loader, output_directory='./output'):
+    def __init__(self, data_loader, output_directory='/common/home/projectgrps/CS425/CS425G6/polyglot-buddy/feat2/output'):
         self.data_loader = data_loader
         self.output_directory = output_directory
         if not os.path.exists(output_directory):
@@ -51,24 +82,40 @@ class OpenEndedQuestionGenerator:
 
     def convert_to_open_ended(self, passage, question, options, correct_option, language):
         url = "http://localhost:11434/api/generate"
+
+        prompt = prompt_template.format(
+            target_language = language,
+            passage = passage,
+            question = question,
+            option_1 = options[0],
+            option_2 = options[1],
+            option_3 = options[2],
+            option_4 = options[3],
+            correct_option = correct_option,
+        )
+
         data = {
             "model": "llama2",
-            "prompt": f"Passage: {passage}\nQuestion: {question}\nMultiple Choices:\n 1:{options[0]}\n2:{options[1]}\n3:{options[2]}\n4:{options[3]}\nCorrect Answer: {correct_option}\nGiven the above, convert the question to an open-ended question in {language} that can be answered by a user based on only information provided in the passage. Then, also provide the corresponding answer in {language}.The format of your response should be exactly\nQuestion: <Generated Question in target language>\nAnswer: <Corresponding Answer to generated question>",
+            "prompt": prompt,
             "stream": False,
         }
+
         headers = {"Content-Type": "application/json"}
         response = requests.post(url, data=json.dumps(data), headers=headers)
         generated_dict = response.json()
 
         # Remove redundant keys
-        redundant_keys = ['total_duration', 'context', 'load_duration', 'prompt_eval_count', 'prompt_eval_duration', 'eval_count', 'eval_duration', 'model']
+        redundant_keys = ['total_duration', 'context', 'load_duration', 'prompt_eval_count', 'prompt_eval_duration', 'eval_count', 'eval_duration', 'model', 'created_at', 'done']
         for key in redundant_keys:
             generated_dict.pop(key, None)
+
+        # Save the passage its tied to as well
+        generated_dict["passage"] = passage
         
         return generated_dict
 
     def save_to_file(self, data, lang):
-        output_file_path = os.path.join(self.output_directory, f'{lang}_open_ended.json')
+        output_file_path = os.path.join(self.output_directory, f'{lang}_short_answer.json')
         with open(output_file_path, 'w', encoding='utf-8') as file:
             json.dump(data, file, ensure_ascii=False, indent=4)
         print(f"Data saved to {output_file_path}")
@@ -78,6 +125,7 @@ class OpenEndedQuestionGenerator:
         open_ended_data = []
         for item in data:
             open_ended_data.append(self.convert_to_open_ended(item['passage'], item['question'], item['options'], item['correct_answer_num'], lang))
+        print(f"Number of questions and answers for {lang}: {len(open_ended_data)}")
         self.save_to_file(open_ended_data, lang)
         return open_ended_data
     
@@ -90,9 +138,9 @@ languages_map = {
     "Chinese": "zho_Hans.jsonl",
     "English": "eng_Latn.jsonl"
 }
-directory = "./Belebele"
+directory = "/common/home/projectgrps/CS425/CS425G6/polyglot-buddy/feat2/Belebele"
 
-data_loader = DataLoader(languages_map, directory, limit=10)
+data_loader = DataLoader(languages_map, directory)
 question_generator = OpenEndedQuestionGenerator(data_loader)
 
 for language in languages_map.keys():
