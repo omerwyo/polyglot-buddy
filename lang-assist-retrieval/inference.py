@@ -3,7 +3,7 @@ import torch
 import numpy as np
 import json
 from sentence_transformers import SentenceTransformer
-from utils import get_doc_embeddings, get_most_similar_doc_tag
+from .utils import get_doc_embeddings, get_most_similar_doc_tag
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -23,7 +23,7 @@ doc_embeddings = get_doc_embeddings(model, chosen_doc_word_len=chosen_doc_word_l
 
 
 def get_doc_string(language, doc_tag):
-    doc_path = os.path.join('0-data/lang_documents', language, f'{doc_tag}.txt')
+    doc_path = os.path.join('feat1/0-data/lang_documents', language, f'{doc_tag}.txt')
     f = open(doc_path, 'r')
     doc_string = f.read()
     return doc_string
@@ -32,7 +32,7 @@ def get_doc_string(language, doc_tag):
 def retrieve_document(inference_query, language):
     most_similar_doc_tag = get_most_similar_doc_tag(model, inference_query, doc_embeddings)
     doc_string = get_doc_string(language, most_similar_doc_tag)
-    
+
     return doc_string
 
     print(f'--- inference_query: {inference_query} ---')
@@ -40,5 +40,6 @@ def retrieve_document(inference_query, language):
     print('doc_string:', doc_string[:100])
     
 
-for inference_query in inference_queries:
-    retrieve_document(inference_query, target_language)
+# for inference_query in inference_queries:
+#     retrieve_document(inference_query, target_language)
+    
