@@ -34,7 +34,11 @@ def get_most_similar_doc_tag(model, query, doc_embeddings):
     score_fn = util.dot_score
     # score_fn = util.cos_sim
     score_list = score_fn(query_embed, doc_embeddings['embedding_list'])[0].cpu().tolist()
-    
-    most_similar_ind = np.argmax(score_list)
-    most_similar_doc_id = doc_embeddings['query_tag_list'][most_similar_ind]
+    lowest_score = min(score_list)
+
+    if lowest_score >= 0.25:
+        most_similar_ind = np.argmax(score_list)
+        most_similar_doc_id = doc_embeddings['query_tag_list'][most_similar_ind]
+    else:
+        most_similar_doc_id = "unreturned"
     return most_similar_doc_id

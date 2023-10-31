@@ -279,8 +279,8 @@ conv_handler = ConversationHandler(
 # Main function to set up the bot
 def main() -> None:
     # Insert your bot's token
-    # updater = Updater("6623692052:AAEr6l5YByR5mr0LPdLryNCG1JuwhtakcfY")
-    updater = Updater("6702133422:AAHWL7IDtrh9N6RNS1iUp4N-FogK7Ye9YhM")
+    updater = Updater("6623692052:AAEr6l5YByR5mr0LPdLryNCG1JuwhtakcfY")
+    # updater = Updater("6702133422:AAHWL7IDtrh9N6RNS1iUp4N-FogK7Ye9YhM")
 
     dispatcher = updater.dispatcher
 

@@ -31,7 +31,13 @@ def get_doc_string(language, doc_tag):
     
 def retrieve_document(inference_query, language):
     most_similar_doc_tag = get_most_similar_doc_tag(model, inference_query, doc_embeddings)
-    doc_string = get_doc_string(language, most_similar_doc_tag)
+
+    # Choose what text to return depending on the id obtained from the threshold
+    if most_similar_doc_tag != "unreturned":
+        doc_string = get_doc_string(language, most_similar_doc_tag)
+
+    elif most_similar_doc_tag == "unreturned":
+        doc_string = "Oops, it seems I'm unable to understand what you're asking. How about we try a different question?"
 
     return doc_string
 
