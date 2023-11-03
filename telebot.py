@@ -1,5 +1,6 @@
 from urllib import response
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+import telegram
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, MessageHandler, CallbackContext, Filters, MessageFilter, ConversationHandler
 
 from feat1.inference import retrieve_document
@@ -55,6 +56,7 @@ def ask_question(update: Update, context: CallbackContext) -> None:
     return AWAITING_QUESTION
 
 def handle_question_response(update: Update, context: CallbackContext) -> None:
+    context.bot.send_chat_action(chat_id=update.effective_chat.id, action=telegram.ChatAction.TYPING)
     # Assume the user's response is the text of the message
     user_response = update.message.text
     language = context.user_data.get('language', 'the chosen language')
@@ -136,6 +138,7 @@ def interactive_language_learning(update: Update, context: CallbackContext) -> N
 
 # Callback handler to display comprehension question
 def display_comprehension_question(update: Update, context: CallbackContext) -> None:
+    context.bot.send_chat_action(chat_id=update.effective_chat.id, action=telegram.ChatAction.TYPING)
     query = update.callback_query
     query.answer()
     language = query.data
@@ -157,6 +160,7 @@ def display_comprehension_question(update: Update, context: CallbackContext) -> 
 
 # Handler for user's response to the comprehension question
 def handle_comprehension_response(update: Update, context: CallbackContext) -> None:
+    context.bot.send_chat_action(chat_id=update.effective_chat.id, action=telegram.ChatAction.TYPING)
     user_response = update.message.text
     language = context.user_data.get('language_learning')
 
