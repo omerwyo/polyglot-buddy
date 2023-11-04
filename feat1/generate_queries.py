@@ -16,7 +16,7 @@ def create_queries_for_bard(lang='English'):
     # append_line = f'(in {lang}). Give me examples, pronunciations, and tips for someone new to the {lang} language.'
     append_line = f'(in {lang}, for someone new to the {lang} language). Give me examples and format each example like this: {lang} words: (English translation, English pronunciation). Use point format, and not table format. Afterwards, give me some tips specific to the question I asked, not generic tips for learning {lang}. '
     
-    query_file_path = '0-data/train_queries.txt'
+    query_file_path = '/common/home/projectgrps/CS425/CS425G6/polyglot-buddy/feat1/0-data/train_queries.txt'
     query_file = open(query_file_path, 'r')
     for line in query_file.readlines():
         if not line.startswith('['):
@@ -82,7 +82,7 @@ def create_paraphrased_queries():
         # )
         # paraphrased_queries_list = [x for (x,num) in paraphrased_queries_list]
         
-    json_out_path = '0-data/paraphrased_query_list.json'
+    json_out_path = '/common/home/projectgrps/CS425/CS425G6/polyglot-buddy/feat1/0-data/paraphrased_query_list.json'
     with open(json_out_path, 'w') as outfile:
         json.dump(paraphrased_queries_dict, outfile)
         

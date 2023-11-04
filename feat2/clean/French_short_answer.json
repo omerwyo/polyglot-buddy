@@ -1533,7 +1533,7 @@
         "id": 256,
         "passage": "À la maison, en raison de cette exposition constante aux germes locaux, les chances sont très élevées que vous soyez déjà immunisé contre eux. Mais dans d'autres parties du monde, où la faune bactériologique est nouvelle pour vous, vous risquez bien plus de rencontrer des problèmes. De plus, dans les climats plus chauds, les bactéries se développent plus rapidement et survivent plus longtemps à l'extérieur du corps. Ainsi les fléaux de Delhi Belly, la malédiction du pharaon, la vengeance de Montezuma et leurs nombreux amis. Comme pour les problèmes respiratoires dans les climats plus froids, les problèmes intestinaux dans les climats chauds sont assez courants et, dans la plupart des cas, sont particulièrement gênants mais pas vraiment dangereux.",
         "question": "D'après l'extrait, une exposition constante pourrait entraîner une immunité à quoi ?",
-        "answer": "2 - Aux germes locaux"
+        "answer": "Aux germes locaux"
     },
     {
         "id": 257,
@@ -1582,5 +1582,11 @@
         "passage": "La faune et la flore sauvages sont des thèmes parmi les plus difficiles à capturer pour un photographe, et nécessitent une combinaison de chance, de patience, d'expérience et un bon équipement. La photographie de la vie sauvage est souvent considérée comme allant de soi, mais comme pour la photographie en général, une image vaut mille mots. La photographie de la vie sauvage nécessite souvent un long téléobjectif. Toutefois, d'autres scènes comme une volée d'oiseaux ou une minuscule créature exigent l'utilisation d'autres objectifs. De nombreux animaux exotiques sont difficiles à trouver, et les parcs ont parfois des règles relatives à la prise de photos à des fins commerciales. Les animaux sauvages peuvent être timides ou agressifs. L'environnement peut être froid, chaud ou autrement hostile.",
         "question": "Quel type d'objets nécessite un photographe de la vie sauvage pour utiliser un objectif spécial ?",
         "answer": "Les animaux exotiques sont difficiles à trouver et les parcs ont souvent des règles relatives à la prise de photos à des fins commerciales, donc un photographe de la vie sauvage doit utiliser un objectif spécial pour photographier ces animaux."
+    },
+    {
+        "id": 265,
+        "passage": "Une population est l'ensemble des organismes d'une espèce particulière dans une zone géographique donnée. Lorsque tous les individus d'une population sont identiques en ce qui concerne un trait phénotypique particulier, on dit qu'ils sont monomorphes. Lorsque les individus présentent plusieurs variantes d'un trait particulier, ils sont polymorphes.",
+        "question": "Quel trait phénotypique particulier caractérise les individus d'une population lorsqu'ils sont polymorphiques?",
+        "answer": "Le trait phénotypique particolare qui caractérise les individus d'une population lorsqu'ils sont polymorphes est le nombre de variantes qu'ils presentent."
     }
 ]

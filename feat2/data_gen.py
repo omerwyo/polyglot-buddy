@@ -135,7 +135,7 @@ languages_map = {
     "French": "fra_Latn.jsonl",
     "German": "deu_Latn.jsonl",
     "Italian": "ita_Latn.jsonl",
-    "Chinese": "zho_Hans.jsonl",
+    "Mandarin": "zho_Hans.jsonl",
     "English": "eng_Latn.jsonl"
 }
 directory = "/common/home/projectgrps/CS425/CS425G6/polyglot-buddy/feat2/Belebele"

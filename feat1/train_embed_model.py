@@ -14,7 +14,7 @@ output_path = f'0-saved-models/multi-qa'
 def get_train_examples():
     train_examples = []
     
-    paraphrased_queries_path = '0-data/t5_paraphrased_query_list.json'
+    paraphrased_queries_path = '/common/home/projectgrps/CS425/CS425G6/polyglot-buddy/feat1/0-data/t5_paraphrased_query_list.json'
     with open(paraphrased_queries_path, 'r') as file:
         paraphrased_queries_dict = json.load(file)
         
