@@ -15,7 +15,8 @@ def get_doc_embeddings(model, language='English', chosen_doc_word_len=99999):
 
     embedding_list = []
     for query_tag in query_tag_list:
-        fpath = os.path.join('feat1', '0-data', 'lang_documents', language, f'{query_tag}.txt')
+        fpath = os.path.join('/common', 'home', 'projectgrps', 'CS425', 'CS425G6', 'polyglot-buddy', 'feat1', '0-data', 'lang_documents', language, f'{query_tag}.txt')
+        
         print(fpath)
         f = open(fpath, 'r')
 

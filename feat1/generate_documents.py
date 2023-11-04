@@ -14,10 +14,10 @@ def create_empty_files(language='English'):
 
     print(query_tag_list)
     
-    os.makedirs(os.path.join('0-data', 'lang_documents', language))
+    os.makedirs(os.path.join('/common/home/projectgrps/CS425/CS425G6/polyglot-buddy/feat1/0-data', 'lang_documents', language))
 
     for query_tag in query_tag_list:
-        fpath = os.path.join('0-data', 'lang_documents', language, f'{query_tag}.txt')
+        fpath = os.path.join('/common/home/projectgrps/CS425/CS425G6/polyglot-buddy/feat1/0-data', 'lang_documents', language, f'{query_tag}.txt')
         print(fpath)
         if not os.path.exists(fpath):
             open(fpath, 'w').close()

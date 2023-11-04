@@ -23,7 +23,7 @@ doc_embeddings = get_doc_embeddings(model, chosen_doc_word_len=chosen_doc_word_l
 
 
 def get_doc_string(language, doc_tag):
-    doc_path = os.path.join('feat1/0-data/lang_documents', language, f'{doc_tag}.txt')
+    doc_path = os.path.join('/common/home/projectgrps/CS425/CS425G6/polyglot-buddy/feat1/0-data/lang_documents', language, f'{doc_tag}.txt')
     f = open(doc_path, 'r', encoding='utf8')
     doc_string = f.read()
     return doc_string
