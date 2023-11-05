@@ -1,6 +1,5 @@
 import os
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram import ChatAction
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ChatAction
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, MessageHandler, CallbackContext, Filters, ConversationHandler
 
 from feat1.inference import retrieve_document
@@ -66,20 +65,6 @@ def handle_question_response(update: Update, context: CallbackContext) -> None:
     user_response = update.message.text
     language = context.user_data.get('language', 'the chosen language')
 
-    # # Dummy response based on language
-    # responses = {
-    #     "Spanish": "Here are some ways you can do this in Spanish:",
-    #     "French": "Here are some ways you can do this in French:",
-    #     "Mandarin": "Here are some ways you can do this in Mandarin:",
-    #     "German": "Here are some ways you can do this in German:",
-    #     "Italian": "Here are some ways you can do this in Italian:",
-    # }
-
-    # response = responses.get(language, "Here are some ways you can do this:")
-    # #response = responses.get(language, f"Here are some ways you can do this in {language}:")
-
-    # Add actual logic to generate response based on user question and language
-    # follow_up = response + "\n1) qwertyuiop\n2) asdfghjkl\n3) zxcvbnm"
     follow_up = retrieve_document(user_response, language)
 
     # Send the follow-up message as a new message
@@ -152,15 +137,6 @@ def display_comprehension_question(update: Update, context: CallbackContext) -> 
 
     context.user_data['feat2_curr_question_id'] = passage_question_answer['id']
 
-    # Dummy data for comprehension question
-    # comprehension_questions = {
-    #     "Spanish": "¿Cómo estás?",
-    #     "French": "Comment ça va?",
-    #     "Mandarin": "你好吗？",
-    #     "German": "Wie geht es dir?",
-    #     "Italian": "Come stai?",
-    # }
-
     question_text = f"Here is a comprehension passage and a question for {language}\nPassage: {passage_question_answer['passage']}\n\nQuestion: {passage_question_answer['question']}"
 
     context.bot.send_message(chat_id=update.effective_chat.id, text=question_text)
@@ -177,9 +153,6 @@ def handle_comprehension_response(update: Update, context: CallbackContext) -> N
     curr_qn_id = context.user_data['feat2_curr_question_id']
 
     feedback_text = get_answer_feedback(language, curr_qn_id, user_response.strip())
-
-    # Dummy feedback based on the user's response
-    # feedback_text = f"Here is some feedback for your response in {language}:\n1) qwertyuiop\n2) asdfghjkl\n3) zxcvbnm"
 
     # Ask if the user wants to try another question
     question_followup = "Would you like to try another comprehension question?"
@@ -261,8 +234,6 @@ conv_handler = ConversationHandler(
     ],
     states={
         SELECTING_ACTION: [
-            # CallbackQueryHandler(real_time_language_assistance, pattern='^real_time$'),
-            # CallbackQueryHandler(interactive_language_learning, pattern='^language_learning$'),
             CallbackQueryHandler(after_done, pattern='^(real_time|language_learning)$')
         ],
         SELECTING_LANGUAGE_QUESTION: [
@@ -285,7 +256,6 @@ conv_handler = ConversationHandler(
         ASKING_COMPREHENSION_AGAIN: [
             CallbackQueryHandler(handle_second_chance_comprehension, pattern='^(Spanish|French|Mandarin|German|Italian|interactive_language_learning|done)$')
         ]
-        # Add other states and handlers as needed
     },
     fallbacks=[
         CommandHandler('start', start)
