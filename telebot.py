@@ -1,4 +1,6 @@
 import os
+import threading
+import time
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram import ChatAction
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, MessageHandler, CallbackContext, Filters, ConversationHandler
@@ -8,7 +10,7 @@ from feat1.inference import retrieve_document
 from feat2.retrieve import load_random_question
 from feat2.feedback import get_answer_feedback
 
-os.environ['TOKENIZERS_PARALLELISM'] = "false"
+os.environ['TOKENIZERS_PARALLELISM'] = "true"
 
 # Define states
 SELECTING_ACTION, SELECTING_LANGUAGE_QUESTION, SELECTING_LANGUAGE_COMPREHENSION, AWAITING_QUESTION, AWAITING_COMPREHENSION_RESPONSE, ASKING_QUESTION_AGAIN, ASKING_COMPREHENSION_AGAIN = range(7)
@@ -66,20 +68,6 @@ def handle_question_response(update: Update, context: CallbackContext) -> None:
     user_response = update.message.text
     language = context.user_data.get('language', 'the chosen language')
 
-    # # Dummy response based on language
-    # responses = {
-    #     "Spanish": "Here are some ways you can do this in Spanish:",
-    #     "French": "Here are some ways you can do this in French:",
-    #     "Mandarin": "Here are some ways you can do this in Mandarin:",
-    #     "German": "Here are some ways you can do this in German:",
-    #     "Italian": "Here are some ways you can do this in Italian:",
-    # }
-
-    # response = responses.get(language, "Here are some ways you can do this:")
-    # #response = responses.get(language, f"Here are some ways you can do this in {language}:")
-
-    # Add actual logic to generate response based on user question and language
-    # follow_up = response + "\n1) qwertyuiop\n2) asdfghjkl\n3) zxcvbnm"
     follow_up = retrieve_document(user_response, language)
 
     # Send the follow-up message as a new message
@@ -150,16 +138,8 @@ def display_comprehension_question(update: Update, context: CallbackContext) -> 
 
     passage_question_answer = load_random_question(language)
 
+    # Store the id of the question for future reference
     context.user_data['feat2_curr_question_id'] = passage_question_answer['id']
-
-    # Dummy data for comprehension question
-    # comprehension_questions = {
-    #     "Spanish": "¿Cómo estás?",
-    #     "French": "Comment ça va?",
-    #     "Mandarin": "你好吗？",
-    #     "German": "Wie geht es dir?",
-    #     "Italian": "Come stai?",
-    # }
 
     question_text = f"Here is a comprehension passage and a question for {language}\nPassage: {passage_question_answer['passage']}\n\nQuestion: {passage_question_answer['question']}"
 
@@ -167,8 +147,18 @@ def display_comprehension_question(update: Update, context: CallbackContext) -> 
 
     return AWAITING_COMPREHENSION_RESPONSE
 
+def send_typing_action(context, chat_id, stop_event):
+    while not stop_event.is_set():
+        context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
+        time.sleep(3)  # Sleep for the duration of the 'typing' action visibility
+
 # Handler for user's response to the comprehension question
 def handle_comprehension_response(update: Update, context: CallbackContext) -> None:
+    chat_id = update.effective_chat.id
+    stop_typing_event = threading.Event()
+    typing_thread = threading.Thread(target=send_typing_action, args=(context, chat_id, stop_typing_event))
+    typing_thread.start()
+
     context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.TYPING)
     user_response = update.message.text
     language = context.user_data.get('language_learning')
@@ -178,8 +168,9 @@ def handle_comprehension_response(update: Update, context: CallbackContext) -> N
 
     feedback_text = get_answer_feedback(language, curr_qn_id, user_response.strip())
 
-    # Dummy feedback based on the user's response
-    # feedback_text = f"Here is some feedback for your response in {language}:\n1) qwertyuiop\n2) asdfghjkl\n3) zxcvbnm"
+    # Stop the typing action
+    stop_typing_event.set()
+    typing_thread.join()
 
     # Ask if the user wants to try another question
     question_followup = "Would you like to try another comprehension question?"
@@ -296,9 +287,11 @@ conv_handler = ConversationHandler(
 
 # Main function to set up the bot
 def main() -> None:
-    # Insert your bot's token
-    updater = Updater("6623692052:AAEr6l5YByR5mr0LPdLryNCG1JuwhtakcfY")
-    # updater = Updater("6702133422:AAHWL7IDtrh9N6RNS1iUp4N-FogK7Ye9YhM")
+    # Jian Yi bot token
+    # updater = Updater("6623692052:AAEr6l5YByR5mr0LPdLryNCG1JuwhtakcfY")
+
+    # Khai Soon bot token
+    updater = Updater("6702133422:AAHWL7IDtrh9N6RNS1iUp4N-FogK7Ye9YhM")
 
     dispatcher = updater.dispatcher
 
