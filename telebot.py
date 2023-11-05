@@ -252,8 +252,6 @@ conv_handler = ConversationHandler(
     ],
     states={
         SELECTING_ACTION: [
-            # CallbackQueryHandler(real_time_language_assistance, pattern='^real_time$'),
-            # CallbackQueryHandler(interactive_language_learning, pattern='^language_learning$'),
             CallbackQueryHandler(after_done, pattern='^(real_time|language_learning)$')
         ],
         SELECTING_LANGUAGE_QUESTION: [
@@ -276,7 +274,6 @@ conv_handler = ConversationHandler(
         ASKING_COMPREHENSION_AGAIN: [
             CallbackQueryHandler(handle_second_chance_comprehension, pattern='^(Spanish|French|Mandarin|German|Italian|interactive_language_learning|done)$')
         ]
-        # Add other states and handlers as needed
     },
     fallbacks=[
         CommandHandler('start', start)
