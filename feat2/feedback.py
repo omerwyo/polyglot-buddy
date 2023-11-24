@@ -40,15 +40,11 @@ def get_from_ollama(prompt, model="llama2"):
         "model": model,
         "prompt": prompt,
         "stream": False,
-        # "temperature": 0.7,
         "options": {
             "temperature": 0.7,
             "seed": 42,
-            # "num_predict": 100,
             "top_k": 30,
-            "top_p": 1,
-            # "repeat_last_n": 64,
-            # "num_gpu": 2,
+            "top_p": 0.8,
         }
     }
 
@@ -66,25 +62,6 @@ def get_from_ollama(prompt, model="llama2"):
         generated_dict.pop(key, None)
 
     return generated_dict['response'] if generated_dict['done'] == True else "Unable to provide feedback :/"
-
-def get_from_llama_cpp(prompt):
-    url = "http://localhost:8912/completion"
-
-    print(prompt)
-
-    data = {
-        "prompt": prompt,
-        "stream": False,
-        "temperature": 0.8,
-    }
-
-    headers = {"Content-Type": "application/json"}
-    response = requests.post(url, data=json.dumps(data), headers=headers)
-    generated_dict = response.json()
-
-    print(generated_dict)
-
-    return generated_dict['content']
 
 def get_grammar_matches(language, user_answer):
     tool = language_tool_map[language]
@@ -131,45 +108,20 @@ def get_answer_feedback(language, question_id, user_answer):
 
     passage_question_answer = data[question_id - 1]
     
-    # Get semantic similarity score between user's answer and our answer, TODO: Uncomment
-    # semantic_similarity_score = compare_sentences(user_answer, passage_question_answer['answer'])
-    # print(f"Semantic Similarity score: {semantic_similarity_score}")
+    # Get semantic similarity score between user's answer and our answer
+    semantic_similarity_score = compare_sentences(user_answer, passage_question_answer['answer'])
+    print(f"Semantic Similarity score: {semantic_similarity_score}")
 
-    prompt = """Given a passage in French, a question, a correct answer and my response to the question, come up with some feedback for me.
+    prompt = feedback_prompt_template.format(
+        language = language,
+        passage = passage_question_answer['passage'],
+        question = passage_question_answer['question'],
+        user_answer = user_answer,
+        correct_answer = passage_question_answer['answer'],
+        semantic_similarity_score = semantic_similarity_score,
+        grammar_matches = formatted_matches,
+    )
 
-Apart from giving you the above information, you have some analysis from a rule-based grammar checker, as well as the semantic similarity score between the correct answer and my answer. Do not mention the explicit similarity score. Give the feedback in English, as that is my native language, and quote my mistakes in French.
-
-Passage: Les colonisateurs, ayant repéré cette activité, avaient également appelé des renforts. Les troupes renforçant les positions avancées comprenaient les 1er et 3e régiments du New Hampshire de 200 hommes, sous les ordres des colonels John Stark et James Reed (tous deux devenus généraux par la suite). Les hommes de Stark ont pris position le long de la clôture, à l'extrémité nord de la position du colon. Lorsque la marée basse a creusé un écart le long de la Mystic River dans le nord-est de la presqu'île, on a rapidement agrandi la barrière par un muret de pierre au nord se terminant au bord de l'eau sur une petite plage. Gridley ou Stark a placé un pieu à environ 30 mètres devant la clôture et a ordonné que personne ne tire avant que les habitués ne la franchissent.
-Question: Où étaient les troupes du colonel Stark situées ?
-User's Answer: Les troupe du colonel Stark était situé à l'extrémitée nord, le long de la clôture.
-Correct Answer: Les troupes du colonel Stark étaient situées à l'extrémité nord, le long de la clôture.
-
-Grammar Check Analysis:
-1. 
-Message: 'Les' et le nom 'troupe' ne semblent pas bien accordés.
-Suggestion: La troupe; Les troupes
-
-2. 
-Message: Le mot masculin « situé » n'est pas accordé en genre avec le mot féminin « ».
-Suggestion: située
-
-3.
-Message: Faute de frappe possible trouvée.
-Suggestion: extrémité; extrémités; extrémisée; extrémité e
-
-Semantic Similarity Score: 0.944
-"""
-
-    # prompt = feedback_prompt_template.format(
-    #     language = language,
-    #     passage = passage_question_answer['passage'],
-    #     question = passage_question_answer['question'],
-    #     user_answer = user_answer,
-    #     correct_answer = passage_question_answer['answer'],
-    #     semantic_similarity_score = semantic_similarity_score,
-    #     grammar_matches = formatted_matches,
-    # )
-
-    # prompt = clean_string(prompt)
+    prompt = clean_string(prompt)
 
     return get_from_ollama(prompt, model="vicuna")
