@@ -287,11 +287,9 @@ conv_handler = ConversationHandler(
 
 # Main function to set up the bot
 def main() -> None:
-    # Jian Yi bot token
-    # updater = Updater("6623692052:AAEr6l5YByR5mr0LPdLryNCG1JuwhtakcfY")
 
-    # Khai Soon bot token
-    updater = Updater("6702133422:AAHWL7IDtrh9N6RNS1iUp4N-FogK7Ye9YhM")
+    # Add your own bot token here
+    updater = Updater("telegram.bot.token")
 
     dispatcher = updater.dispatcher
 

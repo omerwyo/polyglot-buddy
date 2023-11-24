@@ -26,8 +26,7 @@
 #SBATCH --partition=project                 # The partition you've been assigned
 #SBATCH --account=cs425   # The account you've been assigned (normally student)
 #SBATCH --qos=cs425qos       # What is the QOS assigned to you? Check with myinfo command
-# #SBATCH --mail-user=omerwai.2020@scis.smu.edu.sg # Who should receive the email notifications
-#SBATCH --job-name=gen_feat2_data     # Give the job a name
+#SBATCH --job-name=telebot     # Give the job a name
 
 #################################################
 ##            END OF SBATCH COMMANDS           ##
@@ -59,4 +58,5 @@ source ~/venv/bin/activate
 # pip3 install numpy
 
 # Submit your job to the cluster
+# Modify this path as necessary
 srun --gres=gpu:1 python -u /common/home/projectgrps/CS425/CS425G6/polyglot-buddy/telebot.py
