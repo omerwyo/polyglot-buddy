@@ -3,13 +3,13 @@ import os
 import requests
 from langchain.prompts import PromptTemplate
 
-template = """Create an short-answer question in {target_language} and the corresponding answer in {target_language} based on the following context
+template = f"""Create a short-answer question in {target_language} and the corresponding answer in {target_language} based on the following context
 1) A reading comprehension passage, 
 2) A sample multiple choice question (MCQ)
 3) Options for the MCQ 
 4) Answer to the MCQ
 
-The short-answer question has to be abled to be answered using just the passage provided.
+The short-answer question has to be able to be answered using just the passage provided.
 
 Reading Comprehension Passage: {passage}
 

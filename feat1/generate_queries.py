@@ -3,7 +3,7 @@ import json
 import torch
 from transformers import BartForConditionalGeneration, BartTokenizer
 from transformers import AutoModelWithLMHead, AutoTokenizer
-from parrot import Parrot
+# from parrot import Parrot
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

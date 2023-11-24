@@ -9,12 +9,11 @@ DetectorFactory.seed = 0
 
 # File names and their corresponding languages for LanguageTool
 files_languages = {
-    'Chinese_short_answer.json': 'zh-CN',
     'Spanish_short_answer.json': 'es',
     'German_short_answer.json': 'de',
     'English_short_answer.json': 'en',
     'Italian_short_answer.json': 'it',
-    # 'French_short_answer.json': 'fr',
+    'French_short_answer.json': 'fr',
 }
 
 question_pattern = re.compile(r"Question:\s*(.+?)\n")
